@@ -16,4 +16,5 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/zap v1.24.0
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 )
