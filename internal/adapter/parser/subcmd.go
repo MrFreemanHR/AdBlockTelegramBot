@@ -15,3 +15,17 @@ func NewSubCmd(name string) Subcmd {
 	c.OptionalArgs = make(map[byte]OptionalArg)
 	return c
 }
+
+func (s *Subcmd) GetRequiredArg(position byte) *RequiredArg {
+	if val, ok := s.RequiredArgs[position]; ok {
+		return &val
+	}
+	return nil
+}
+
+func (s *Subcmd) GetOptionalArg(position byte) *OptionalArg {
+	if val, ok := s.OptionalArgs[position]; ok {
+		return &val
+	}
+	return nil
+}
