@@ -32,7 +32,8 @@ func (p *Parser) Parse(command string) (*Cmd, error) {
 
 func (p *Parser) commandsParsers() map[string]func(*Cmd, string) error {
 	return map[string]func(*Cmd, string) error{
-		"locales": p.parseLocalesCommand,
+		"locales":  p.parseLocalesCommand,
+		"verifier": p.parseVerifierCommand,
 	}
 }
 
@@ -73,8 +74,10 @@ func (p *Parser) nextToken(str string) (Token, string, error) {
 			}
 			if previousChar.IsBackSlash() {
 				token.InsertChar(currentChar)
+				previousChar = currentChar
 				continue
 			}
+			i++
 			break
 		}
 		if !currentChar.IsBackSlash() {
