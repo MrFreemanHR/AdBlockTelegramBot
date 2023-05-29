@@ -13,8 +13,8 @@ import (
 	/verifier remove name
 	cmd       subcmd require_arg
 
-	/verifier list
-	cmd       subcmd
+	/verifier list   json         author:nickname
+	cmd       subcmd optional_arg optional_arg
 */
 
 func (p *Parser) parseVerifierCommand(c *Cmd, str string) error {
@@ -41,7 +41,7 @@ func (p *Parser) parseVerifierCommand(c *Cmd, str string) error {
 		return p.verifierRemoveSubcmd(&firstSubCmd, nextLevel)
 	}
 	if firstSubCmd.Name == "list" {
-		return nil
+		return p.verifierListSubcmd(&firstSubCmd, nextLevel)
 	}
 
 	return ErrNotKnownSubCommand
@@ -91,6 +91,29 @@ func (p *Parser) verifierRemoveSubcmd(c *Subcmd, str string) error {
 	var nameArg RequiredArg
 	nameArg.SetValue(name.Value())
 	c.RequiredArgs[0] = nameArg
+
+	return nil
+}
+
+func (p *Parser) verifierListSubcmd(c *Subcmd, str string) error {
+	var optionalArgCounter = 0
+	var nextLevel = str
+	var tokenErr error
+
+	for nextLevel != "" {
+		if optionalArgCounter > 2 { // Max count of args
+			break
+		}
+		var optionalArgToken Token
+		optionalArgToken, nextLevel, tokenErr = p.nextToken(nextLevel)
+		if tokenErr != nil {
+			break // Only "empty token" error
+		}
+		var optionalArg OptionalArg
+		optionalArg.SetValue(optionalArgToken.Value())
+		c.OptionalArgs[byte(optionalArgCounter)] = optionalArg
+		optionalArgCounter++
+	}
 
 	return nil
 }
