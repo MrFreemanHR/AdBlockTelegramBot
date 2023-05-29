@@ -61,7 +61,7 @@ func (p *Parser) nextToken(str string) (Token, string, error) {
 	if len(str) > 0 && Char(str[0]).IsQuote() {
 		inQuotes = true
 	}
-
+	var previousChar = Char(' ')
 	for i, char = range str {
 		currentChar := Char(char)
 		if currentChar.IsWhitespace() && !inQuotes {
@@ -71,9 +71,16 @@ func (p *Parser) nextToken(str string) (Token, string, error) {
 			if i == 0 {
 				continue
 			}
+			if previousChar.IsBackSlash() {
+				token.InsertChar(currentChar)
+				continue
+			}
 			break
 		}
-		token.InsertChar(currentChar)
+		if !currentChar.IsBackSlash() {
+			token.InsertChar(currentChar)
+		}
+		previousChar = currentChar
 	}
 	if empty := token.IsEmpty(); empty != nil {
 		return token, "", empty
