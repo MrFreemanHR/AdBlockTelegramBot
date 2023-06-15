@@ -14,6 +14,8 @@ type Config struct {
 	SQLiteDSN string `json:"sqlite_dsn"`
 	// Telegram
 	Token string `json:"token"`
+	// Locales
+	LocalesFolder string `json:"locales_folder"`
 }
 
 func ParseConfig(path string) (Config, error) {
