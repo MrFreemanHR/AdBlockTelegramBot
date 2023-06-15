@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"adblock_bot/internal/core/interfaces"
-	"adblock_bot/internal/transport/bot/message_handler/ping"
+	"adblock_bot/internal/core/messageHandlers/ping"
 	tdlibbot "adblock_bot/internal/transport/tdlib_bot"
 
 	"github.com/spf13/cobra"

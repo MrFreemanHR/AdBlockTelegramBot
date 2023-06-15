@@ -2,11 +2,10 @@ package ping
 
 import (
 	"adblock_bot/internal/adapter/logger"
+	"adblock_bot/internal/core/entity"
 	"adblock_bot/internal/core/interfaces"
 	"adblock_bot/internal/transport"
 	"strings"
-
-	"adblock_bot/internal/core/entity"
 )
 
 type handler struct {
