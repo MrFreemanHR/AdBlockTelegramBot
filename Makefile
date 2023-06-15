@@ -6,7 +6,7 @@ clean-td:
 
 build-td: clean-td
 	git clone https://github.com/tdlib/td.git
-	cd td && git checkout v1.7.0
+	cd td && git checkout v1.8.0
 	cd td && mkdir build
 	cd td/build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . -j 6 && sudo make install
 
@@ -14,3 +14,7 @@ build:
 	go build --ldflags "-extldflags '-L/usr/local/lib -ltdjson_static -ltdjson_private -ltdclient -ltdcore -ltdactor -ltddb -ltdsqlite -ltdnet -ltdutils -ldl -lm -lssl -lcrypto -lstdc++ -lz -lbsd'" -o ./bot main.go
 
 full-build: td-deps-ubuntu build-td
+
+clean-cache:
+	sudo rm -rf tdlib-db/*
+	sudo rm -rf tdlib-files/*
