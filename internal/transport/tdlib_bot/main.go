@@ -3,59 +3,77 @@ package tdlibbot
 import (
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/config"
-	"crypto/sha512"
-	"errors"
-	"fmt"
 	"os"
 	"strconv"
 
-	"github.com/Arman92/go-tdlib"
+	"github.com/zelenin/go-tdlib/client"
 )
 
 type tdlibbot struct {
-	client      *tdlib.Client
-	updatesChan chan tdlib.UpdateMsg
+	client *client.Client
+	me     *client.User
+	events *client.Listener
 }
 
 func New() *tdlibbot {
-	tdlib.SetLogVerbosityLevel(1)
-	tdlib.SetFilePath("./tdlib_errors.log")
-
-	if createDirs() != nil {
-		logger.Logger().Fatal("Can't start user-bot due to previous errors!")
+	err := createDirs()
+	if err != nil {
+		logger.Logger().Error("Can't create cache dirs: %s", err.Error())
 		return nil
 	}
 
-	// Create new instance of client
-	client := tdlib.NewClient(tdlib.Config{
-		APIID:               config.CurrentConfig.APIid,
-		APIHash:             config.CurrentConfig.APIHash,
-		SystemLanguageCode:  "en",
-		DeviceModel:         "Server",
-		SystemVersion:       "1.0.0",
-		ApplicationVersion:  "1.0.0",
-		UseMessageDatabase:  true,
-		UseFileDatabase:     true,
-		UseChatInfoDatabase: true,
-		UseTestDataCenter:   false,
-		DatabaseDirectory:   "./tdlib-db",
-		FileDirectory:       "./tdlib-files",
-		IgnoreFileNames:     false,
+	authorizer := client.ClientAuthorizer()
+	go client.CliInteractor(authorizer)
+
+	apiid, err := strconv.Atoi(config.CurrentConfig.APIid)
+	if err != nil {
+		logger.Logger().Error("Can't convert APP_ID to int: %s", err.Error())
+		return nil
+	}
+	authorizer.TdlibParameters <- &client.TdlibParameters{
+		UseTestDc:              false,
+		DatabaseDirectory:      "./tdlib-db",
+		FilesDirectory:         "./tdlib-files",
+		UseFileDatabase:        true,
+		UseChatInfoDatabase:    true,
+		UseMessageDatabase:     true,
+		UseSecretChats:         false,
+		ApiId:                  int32(apiid),
+		ApiHash:                config.CurrentConfig.APIHash,
+		SystemLanguageCode:     "en",
+		DeviceModel:            "server",
+		SystemVersion:          "1.0.0",
+		ApplicationVersion:     "1.0.0",
+		EnableStorageOptimizer: true,
+		IgnoreFileNames:        false,
+	}
+
+	_, err = client.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
+		NewVerbosityLevel: 1,
 	})
-
-	var td = tdlibbot{
-		client: client,
-	}
-
-	if err := td.Auth(); err != nil {
-		logger.Logger().Error("Last error: %s", err.Error())
-		logger.Logger().Fatal("Can't start user-bot due to previous errors!")
+	if err != nil {
+		logger.Logger().Error("Can't change verbosity level: %s", err.Error())
 		return nil
 	}
 
-	td.updatesChan = td.client.GetRawUpdatesChannel(100)
+	tdlibClient, err := client.NewClient(authorizer)
+	if err != nil {
+		logger.Logger().Error("Can't create new tdlib client: %s", err.Error())
+		return nil
+	}
 
-	return &td
+	me, err := tdlibClient.GetMe()
+	if err != nil {
+		logger.Logger().Error("Can't get myself: %s", err.Error())
+		return nil
+	}
+
+	events := tdlibClient.GetListener()
+	return &tdlibbot{
+		client: tdlibClient,
+		me:     me,
+		events: events,
+	}
 }
 
 func createDirs() error {
@@ -78,89 +96,10 @@ func createDirs() error {
 	return nil
 }
 
-func (t *tdlibbot) Auth() error {
-	logger.Logger().Info("=== Authorization for user-bot ===")
-	if t.client == nil {
-		logger.Logger().Error("No tdlib client! Check your dependencies!")
-		return errors.New("no tdlib client")
-	}
-	for {
-		currentState, _ := t.client.Authorize()
-		if currentState == nil {
-			continue
-		}
-		logger.Logger().Info("State: %#+v\n", currentState)
-		if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitPhoneNumberType {
-			fmt.Print("> Enter phone: ")
-			var number string
-			fmt.Scanln(&number)
-			_, err := t.client.SendPhoneNumber(number)
-			if err != nil {
-				logger.Logger().Error("Error while sending phone number: %s", err)
-				return err
-			}
-		} else if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitCodeType {
-			fmt.Print("> Enter code: ")
-			var code string
-			fmt.Scanln(&code)
-			_, err := t.client.SendAuthCode(code)
-			if err != nil {
-				logger.Logger().Error("Error while sending auth code: %s", err)
-				return err
-			}
-		} else if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitPasswordType {
-			fmt.Print("> Enter Password: ")
-			var password string
-			fmt.Scanln(&password)
-			_, err := t.client.SendAuthPassword(password)
-			if err != nil {
-				logger.Logger().Error("Error while sending password: %s", err)
-				return err
-			}
-		} else if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateReadyType {
-			logger.Logger().Info("Authorization success!")
-			break
-		} else if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitTdlibParametersType {
-			app_id, err := strconv.Atoi(config.CurrentConfig.APIid)
-			logger.Logger().Info("APPID: %d", app_id)
-			if err != nil {
-				return err
-			}
-			_, err = t.client.SetTdlibParameters(tdlib.NewTdlibParameters(
-				false,                        // useTestDc
-				"./tdlib-db",                 // db dir
-				"./tdlib-files",              // files dir
-				true,                         // use file database
-				true,                         // use chatinfo database
-				true,                         // use messages database
-				false,                        // support for secret chats
-				int32(app_id),                // app id
-				config.CurrentConfig.APIHash, // app hash
-				"en",                         // system language
-				"server",                     // device models
-				"",                           // system version
-				"1.0.0",                      // application version,
-				true,                         // delete old files
-				false,                        // save files with their names
-
-			))
-			if err != nil {
-				return err
-			}
-		} else if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitEncryptionKeyType {
-			h := sha512.New()
-			h.Write([]byte(config.CurrentConfig.DatabasePassword))
-			_, err := t.client.SetDatabaseEncryptionKey(h.Sum(nil))
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func (t *tdlibbot) Run() {
-	for update := range t.updatesChan {
-		t.ProcessEvents(update)
+	for update := range t.events.Updates {
+		if update.GetClass() == client.ClassUpdate {
+			t.ProcessEvents(update)
+		}
 	}
 }

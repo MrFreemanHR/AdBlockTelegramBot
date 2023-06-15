@@ -16,5 +16,11 @@ var userBot = &cobra.Command{
 }
 
 func StartUserBot() {
-	_ = tdlibbot.New()
+	userbot := tdlibbot.New()
+
+	if userbot == nil {
+		return
+	}
+
+	userbot.Run()
 }
