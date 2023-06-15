@@ -16,3 +16,7 @@ type TelegramChat struct {
 	// optional
 	Permissions *TelegramChatPermissions `json:"permissions,omitempty"`
 }
+
+func (c *TelegramChat) IsSuperGroup() bool {
+	return c.Type == "supergroup"
+}

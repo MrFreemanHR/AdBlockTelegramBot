@@ -41,6 +41,9 @@ func (api *TelegramAPI) SendMessage(message entity.TelegramMessage) error {
 		if message.ReplyToMessage != nil {
 			msg.ReplyToMessageID = int(message.ReplyToMessage.MessageID)
 		}
+		if message.ParseMode != "" {
+			msg.ParseMode = message.ParseMode
+		}
 		_, err := api.tgapi.Send(msg)
 		return err
 	}
@@ -50,6 +53,7 @@ func (api *TelegramAPI) SendMessage(message entity.TelegramMessage) error {
 				Text: message.Text,
 			},
 		}
+		// TO-DO: Add markdown parsing for messages
 		request := client.SendMessageRequest{
 			ChatId:              message.Chat.ID,
 			InputMessageContent: &content,

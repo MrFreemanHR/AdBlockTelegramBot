@@ -26,6 +26,8 @@ type TelegramMessage struct {
 	//
 	// optional
 	ReplyToMessage *TelegramMessage `json:"reply_to_message,omitempty"`
+	// Message format method
+	ParseMode string
 }
 
 func NewMessage(chatID int64, text string) TelegramMessage {
