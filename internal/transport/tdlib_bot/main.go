@@ -3,6 +3,7 @@ package tdlibbot
 import (
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/config"
+	"adblock_bot/internal/core/interfaces"
 	"os"
 	"strconv"
 
@@ -10,9 +11,10 @@ import (
 )
 
 type tdlibbot struct {
-	client *client.Client
-	me     *client.User
-	events *client.Listener
+	client          *client.Client
+	me              *client.User
+	events          *client.Listener
+	messageHandlers []interfaces.MessageHandler
 }
 
 func New() *tdlibbot {

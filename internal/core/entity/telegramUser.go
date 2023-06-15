@@ -24,19 +24,4 @@ type TelegramUser struct {
 	//
 	// optional
 	LanguageCode string `json:"language_code,omitempty"`
-	// CanJoinGroups is true, if the bot can be invited to groups.
-	// Returned only in getMe.
-	//
-	// optional
-	CanJoinGroups bool `json:"can_join_groups,omitempty"`
-	// CanReadAllGroupMessages is true, if privacy mode is disabled for the bot.
-	// Returned only in getMe.
-	//
-	// optional
-	CanReadAllGroupMessages bool `json:"can_read_all_group_messages,omitempty"`
-	// SupportsInlineQueries is true, if the bot supports inline queries.
-	// Returned only in getMe.
-	//
-	// optional
-	SupportsInlineQueries bool `json:"supports_inline_queries,omitempty"`
 }
