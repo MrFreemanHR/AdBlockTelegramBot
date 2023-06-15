@@ -2,5 +2,6 @@
     "verbosity_level": 2,
     "sqlite_dsn": "bot.db",
     "token": "my tg bot",
-    "locales_folder": ""
+    "locales_folder": "",
+    "default_locale": "default"
 }

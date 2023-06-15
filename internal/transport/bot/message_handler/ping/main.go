@@ -27,6 +27,7 @@ func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
 		if err != nil {
 			logger.Logger().Warn("Can't send message: %s", err)
 		}
+		return true
 	}
 	return false
 }

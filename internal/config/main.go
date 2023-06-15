@@ -16,6 +16,7 @@ type Config struct {
 	Token string `json:"token"`
 	// Locales
 	LocalesFolder string `json:"locales_folder"`
+	DefaultLocale string `json:"default_locale"`
 }
 
 func ParseConfig(path string) (Config, error) {
