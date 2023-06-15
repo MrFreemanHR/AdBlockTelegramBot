@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"adblock_bot/infrastructure/sqlite"
+	"adblock_bot/infrastructure/mysql"
 	"adblock_bot/internal/core/interfaces"
 	"adblock_bot/internal/repository/models"
 	"errors"
@@ -10,7 +10,7 @@ import (
 )
 
 type verifierRuleRepository struct {
-	db sqlite.SQLite
+	db mysql.MySql
 }
 
 var (
@@ -18,7 +18,7 @@ var (
 	ErrNotFound  = errors.New("rule with this name not found")
 )
 
-func NewVerifierRuleRepository(db sqlite.SQLite) interfaces.VerifierRuleRepository {
+func NewVerifierRuleRepository(db mysql.MySql) interfaces.VerifierRuleRepository {
 	return &verifierRuleRepository{db: db}
 }
 

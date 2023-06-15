@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"adblock_bot/infrastructure/sqlite"
+	"adblock_bot/infrastructure/mysql"
 	"adblock_bot/internal/adapter/locales"
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/adapter/parser"
@@ -21,7 +21,7 @@ type handler struct {
 	parser *parser.Parser
 }
 
-func New(bot *tgbotapi.BotAPI, db *sqlite.SQLite) interfaces.MessageHandler {
+func New(bot *tgbotapi.BotAPI, db *mysql.MySql) interfaces.MessageHandler {
 	repoManager := repository.NewRepositoryManager(*db)
 	verRuleRepo := repoManager.GetVerifierRuleRepository()
 

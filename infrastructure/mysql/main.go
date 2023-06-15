@@ -1,26 +1,26 @@
-package sqlite
+package mysql
 
 import (
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/config"
 
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-type SQLite struct {
+type MySql struct {
 	DB *gorm.DB
 }
 
-func New() *SQLite {
+func New() *MySql {
 	db, err := gorm.Open(
-		sqlite.Open(config.CurrentConfig.SQLiteDSN),
+		mysql.Open(config.CurrentConfig.MySQlDSN),
 	)
 	if err != nil {
 		logger.Logger().Fatal("Can't connect to internal db: %s", err.Error())
 		return nil
 	}
-	return &SQLite{
+	return &MySql{
 		DB: db,
 	}
 }
