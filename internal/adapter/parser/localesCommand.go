@@ -12,15 +12,22 @@ import (
 
 	/locales key     add        group, key, value
 	cmd	     subcmd  subcmd     required_args      optional_args
+
+	/locales locale  save
+	cmd	     subcmd  subcmd
 */
 
 func (p *Parser) parseLocalesCommand(c *Cmd, str string) error {
 	var subcmdsFirstList = []string{
 		"key",
+		"locale",
 	}
-	var subcmdsSecondList = []string{
+	var subcmdsKeyList = []string{
 		"show",
 		"add",
+	}
+	var subcmdsLocalesList = []string{
+		"save",
 	}
 
 	t, nextLevel, tokenErr := p.nextToken(str)
@@ -37,17 +44,23 @@ func (p *Parser) parseLocalesCommand(c *Cmd, str string) error {
 	if tokenErr != nil {
 		return ErrParsingSubCmd
 	}
-	if !slices.Contains(subcmdsSecondList, t.Value()) {
-		return ErrNotKnownSubCommand
-	}
 	var secondSubCmd = NewSubCmd(t.Value())
 	firstSubCmd.Child = &secondSubCmd
-	err := p.localesKeySubcmd(&secondSubCmd, nextLevel)
-	if err != nil {
-		return err
+	if slices.Contains(subcmdsKeyList, t.Value()) {
+		err := p.localesKeySubcmd(&secondSubCmd, nextLevel)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-
-	return nil
+	if slices.Contains(subcmdsLocalesList, t.Value()) {
+		err := p.localesLocaleSubcmd(&secondSubCmd, nextLevel)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return ErrNotKnownSubCommand
 }
 
 func (p *Parser) localesKeySubcmd(c *Subcmd, str string) error {
@@ -98,4 +111,11 @@ func (p *Parser) localesKeySubcmd(c *Subcmd, str string) error {
 		c.RequiredArgs[2] = valueArg
 	}
 	return nil
+}
+
+func (p *Parser) localesLocaleSubcmd(c *Subcmd, str string) error {
+	if c.Name == "save" {
+		return nil
+	}
+	return ErrNotKnownSubCommand
 }

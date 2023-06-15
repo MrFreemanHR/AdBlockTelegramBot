@@ -41,6 +41,22 @@ func (l *LocalesStorage) findLocalesInFolder(path string) error {
 	return nil
 }
 
+func (l *LocalesStorage) GetCurrentLocale() (Locale, error) {
+	defaultLocaleFromConfig := config.CurrentConfig.DefaultLocale
+	if defaultLocaleFromConfig == "" {
+		defaultLocaleFromConfig = "default"
+	}
+
+	if locale, ok := l.locales[defaultLocaleFromConfig]; ok {
+		return locale, nil
+	}
+	return Locale{}, ErrLocaleNotFound
+}
+
+func (l *LocalesStorage) GetDefaultLocale() Locale {
+	return l.locales["default"]
+}
+
 func (l *LocalesStorage) GetDefaultKey(group, key string) string {
 	defaultLocaleFromConfig := config.CurrentConfig.DefaultLocale
 	if defaultLocaleFromConfig == "" {
@@ -129,4 +145,9 @@ func (l *LocalesStorage) AddKeyToDefaultLocale(groupName, key, value string) err
 	locale.SetByKey(groupName, key, value)
 
 	return nil
+}
+
+func (l *LocalesStorage) SaveLocale(locale Locale) error {
+	path := config.CurrentConfig.LocalesFolder + "/" + locale.Name + ".json"
+	return locale.Save(path)
 }

@@ -15,8 +15,10 @@ var defaultLocale = Locale{
 			"locales_help": `	Contol all locales in your bot. 
 Unfortunately there are no other locales now, so this command will not work correctly :(
 			`,
-			"locales_group_show": "Group name: %s\n%s",
-			"locales_key_added":  "Add key \"%s\" to group \"%s\" with value \"%s\"",
+			"locales_group_show":  "Group name: %s\n%s",
+			"locales_key_added":   "Add key \"%s\" to group \"%s\" with value \"%s\"",
+			"locale_saving_error": "Error while saving current locale: %s",
+			"locale_saved":        "Locale saved successfully!",
 		},
 	},
 }

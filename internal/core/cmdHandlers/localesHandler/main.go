@@ -2,6 +2,7 @@ package localeshandler
 
 import (
 	"adblock_bot/internal/adapter/locales"
+	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/adapter/parser"
 	"adblock_bot/internal/core/interfaces"
 	"fmt"
@@ -15,12 +16,17 @@ func New() interfaces.CmdHandler {
 }
 
 func (h *cmdhandler) ProcessCommand(cmd *parser.Cmd) string {
-	keySubCmd := cmd.ChildSubcmd
-	if keySubCmd.Child.Name == "show" {
-		return h.processShowCommand(keySubCmd.Child)
+	SubCmd := cmd.ChildSubcmd
+	if SubCmd.Name == "key" {
+		if SubCmd.Child.Name == "show" {
+			return h.processShowCommand(SubCmd.Child)
+		}
+		if SubCmd.Child.Name == "add" {
+			return h.processAddCommand(SubCmd.Child)
+		}
 	}
-	if keySubCmd.Child.Name == "add" {
-		return h.processAddCommand(keySubCmd.Child)
+	if SubCmd.Name == "locale" {
+		return h.processLocaleCommand()
 	}
 	return ""
 }
@@ -68,4 +74,19 @@ func (h *cmdhandler) processAddCommand(add *parser.Subcmd) (result string) {
 		add.GetRequiredArg(0).GetValue(),
 		add.GetRequiredArg(2).GetValue(),
 	)
+}
+
+func (h *cmdhandler) processLocaleCommand() (result string) {
+	var err error
+	var locale locales.Locale
+	locale, err = locales.GetCurrentLocalesStorage().GetCurrentLocale()
+	if err != nil {
+		locale = locales.GetCurrentLocalesStorage().GetDefaultLocale()
+		logger.Logger().Warn("Can't find current locale from config")
+	}
+	err = locales.GetCurrentLocalesStorage().SaveLocale(locale)
+	if err != nil {
+		return fmt.Sprintf(locales.GetCurrentLocalesStorage().GetDefaultKey("locales", "locale_saving_error"), err.Error())
+	}
+	return locales.GetCurrentLocalesStorage().GetDefaultKey("locales", "locale_saved")
 }
