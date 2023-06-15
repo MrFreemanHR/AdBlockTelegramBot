@@ -3,6 +3,7 @@ package locales
 import (
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/config"
+	"errors"
 	"os"
 	"strings"
 )
@@ -10,6 +11,11 @@ import (
 type LocalesStorage struct {
 	locales map[string]Locale
 }
+
+var (
+	ErrLocaleNotFound = errors.New("locale with this name not found")
+	ErrGroupNotFound  = errors.New("group with this name not found")
+)
 
 func (l *LocalesStorage) findLocalesInFolder(path string) error {
 	files, err := os.ReadDir(path)
@@ -82,4 +88,45 @@ func (l *LocalesStorage) GetKeyFromLocale(localeName, group, key string) string 
 	}
 
 	return value
+}
+
+func (l *LocalesStorage) GetAllKeysFromLocale(localeName, groupName string) (map[string]string, error) {
+	var locale Locale
+	var group map[string]string
+	var ok bool
+
+	if locale, ok = l.locales[localeName]; !ok {
+		return nil, ErrLocaleNotFound
+	}
+
+	if group, ok = locale.Keys[groupName]; !ok {
+		return nil, ErrGroupNotFound
+	}
+
+	return group, nil
+}
+
+func (l *LocalesStorage) GetAllKeysFromDefaultLocale(groupName string) (map[string]string, error) {
+	defaultLocaleFromConfig := config.CurrentConfig.DefaultLocale
+	if defaultLocaleFromConfig == "" {
+		defaultLocaleFromConfig = "default"
+	}
+	return l.GetAllKeysFromLocale(defaultLocaleFromConfig, groupName)
+}
+
+func (l *LocalesStorage) AddKeyToDefaultLocale(groupName, key, value string) error {
+	defaultLocaleFromConfig := config.CurrentConfig.DefaultLocale
+	if defaultLocaleFromConfig == "" {
+		defaultLocaleFromConfig = "default"
+	}
+
+	var locale Locale
+	var ok bool
+	if locale, ok = l.locales[defaultLocaleFromConfig]; !ok {
+		return ErrLocaleNotFound
+	}
+
+	locale.SetByKey(groupName, key, value)
+
+	return nil
 }
