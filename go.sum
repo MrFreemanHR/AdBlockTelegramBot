@@ -1,3 +1,5 @@
+github.com/Arman92/go-tdlib v1.0.0 h1:ioj9TlKXjmVfyc6LwyTb4bje1WhrhCUzlJlmYxow3w8=
+github.com/Arman92/go-tdlib v1.0.0/go.mod h1:gz/NLfLyXSF3LufhmK4a+xcrlIvAUR67zxOWv0JxvsU=
 github.com/PuerkitoBio/goquery v1.5.1/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
 github.com/andybalholm/cascadia v1.1.0/go.mod h1:GsXiBklL0woXo1j/WYWtSYYC4ouU9PqHO0sqidkEA4Y=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=

@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  tgbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: bot
+    

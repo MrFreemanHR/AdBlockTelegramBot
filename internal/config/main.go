@@ -14,6 +14,9 @@ type Config struct {
 	SQLiteDSN string `json:"sqlite_dsn"`
 	// Telegram
 	Token string `json:"token"`
+	// tdlib telegram
+	APIid   string `json:"api_id"`
+	APIHash string `json:"api_hash"`
 	// Locales
 	LocalesFolder string `json:"locales_folder"`
 	DefaultLocale string `json:"default_locale"`
