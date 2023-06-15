@@ -1,6 +1,6 @@
 package main
 
-import "pizdos_bot/cmd"
+import "adblock_bot/cmd"
 
 func main() {
 	cmd.StartApp()
