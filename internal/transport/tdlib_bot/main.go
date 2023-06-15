@@ -3,14 +3,18 @@ package tdlibbot
 import (
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/config"
+	"crypto/sha512"
+	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/Arman92/go-tdlib"
 )
 
 type tdlibbot struct {
-	client *tdlib.Client
+	client      *tdlib.Client
+	updatesChan chan tdlib.UpdateMsg
 }
 
 func New() *tdlibbot {
@@ -43,10 +47,13 @@ func New() *tdlibbot {
 		client: client,
 	}
 
-	if td.Auth() != nil {
+	if err := td.Auth(); err != nil {
+		logger.Logger().Error("Last error: %s", err.Error())
 		logger.Logger().Fatal("Can't start user-bot due to previous errors!")
 		return nil
 	}
+
+	td.updatesChan = td.client.GetRawUpdatesChannel(100)
 
 	return &td
 }
@@ -73,9 +80,16 @@ func createDirs() error {
 
 func (t *tdlibbot) Auth() error {
 	logger.Logger().Info("=== Authorization for user-bot ===")
-	fmt.Printf("Pointer: %#+v\n", t.client)
+	if t.client == nil {
+		logger.Logger().Error("No tdlib client! Check your dependencies!")
+		return errors.New("no tdlib client")
+	}
 	for {
 		currentState, _ := t.client.Authorize()
+		if currentState == nil {
+			continue
+		}
+		logger.Logger().Info("State: %#+v\n", currentState)
 		if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitPhoneNumberType {
 			fmt.Print("> Enter phone: ")
 			var number string
@@ -106,7 +120,47 @@ func (t *tdlibbot) Auth() error {
 		} else if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateReadyType {
 			logger.Logger().Info("Authorization success!")
 			break
+		} else if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitTdlibParametersType {
+			app_id, err := strconv.Atoi(config.CurrentConfig.APIid)
+			logger.Logger().Info("APPID: %d", app_id)
+			if err != nil {
+				return err
+			}
+			_, err = t.client.SetTdlibParameters(tdlib.NewTdlibParameters(
+				false,                        // useTestDc
+				"./tdlib-db",                 // db dir
+				"./tdlib-files",              // files dir
+				true,                         // use file database
+				true,                         // use chatinfo database
+				true,                         // use messages database
+				false,                        // support for secret chats
+				int32(app_id),                // app id
+				config.CurrentConfig.APIHash, // app hash
+				"en",                         // system language
+				"server",                     // device models
+				"",                           // system version
+				"1.0.0",                      // application version,
+				true,                         // delete old files
+				false,                        // save files with their names
+
+			))
+			if err != nil {
+				return err
+			}
+		} else if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitEncryptionKeyType {
+			h := sha512.New()
+			h.Write([]byte(config.CurrentConfig.DatabasePassword))
+			_, err := t.client.SetDatabaseEncryptionKey(h.Sum(nil))
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
+}
+
+func (t *tdlibbot) Run() {
+	for update := range t.updatesChan {
+		t.ProcessEvents(update)
+	}
 }
