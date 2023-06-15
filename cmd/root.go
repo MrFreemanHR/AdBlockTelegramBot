@@ -1,6 +1,11 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"adblock_bot/internal/adapter/logger"
+	"adblock_bot/internal/config"
+
+	"github.com/spf13/cobra"
+)
 
 var rootCmd = &cobra.Command{
 	Use:     "adblock-tg",
@@ -20,5 +25,8 @@ func init() {
 }
 
 func initConfig() {
-
+	var err error
+	config.CurrentConfig, err = config.ParseConfig("config.json")
+	cobra.CheckErr(err)
+	logger.New(logger.VerbosityLevel(config.CurrentConfig.VerbosityLevel))
 }
