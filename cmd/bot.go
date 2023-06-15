@@ -6,6 +6,7 @@ import (
 	"adblock_bot/internal/transport/bot"
 	cmdHandler "adblock_bot/internal/transport/bot/message_handler/cmd"
 	"adblock_bot/internal/transport/bot/message_handler/ping"
+	"adblock_bot/internal/transport/bot/message_handler/verifier"
 
 	"github.com/spf13/cobra"
 )
@@ -25,8 +26,10 @@ func StartBot() {
 
 	pingMessageHandler := ping.New(tgbot.GetTelegramAPI())
 	cmdCmdMessageHandler := cmdHandler.New(tgbot.GetTelegramAPI(), db)
+	verifierMessageHandler := verifier.New(tgbot.GetTelegramAPI(), db)
 
 	messageHandlers := []interfaces.MessageHandler{
+		verifierMessageHandler,
 		pingMessageHandler,
 		cmdCmdMessageHandler,
 	}

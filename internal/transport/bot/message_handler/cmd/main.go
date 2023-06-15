@@ -21,7 +21,7 @@ type handler struct {
 	parser *parser.Parser
 }
 
-func New(bot *tgbotapi.BotAPI, db *sqlite.SQLite) *handler {
+func New(bot *tgbotapi.BotAPI, db *sqlite.SQLite) interfaces.MessageHandler {
 	repoManager := repository.NewRepositoryManager(*db)
 	verRuleRepo := repoManager.GetVerifierRuleRepository()
 

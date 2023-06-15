@@ -70,8 +70,11 @@ func (h *cmdhandler) processAddCommand(cmd *parser.Subcmd) string {
 	}
 
 	var rule = models.VerifierRule{
-		Name:   ruleName,
-		Author: authorValue,
+		Name:      ruleName,
+		Author:    authorValue,
+		AudioNote: true,
+		VideoNote: true,
+		Photo:     true,
 	}
 	for _, optionalArg := range cmd.OptionalArgs {
 		rawArg := optionalArg.GetValue()

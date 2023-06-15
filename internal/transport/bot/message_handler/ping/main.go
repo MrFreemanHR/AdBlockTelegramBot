@@ -2,6 +2,7 @@ package ping
 
 import (
 	"adblock_bot/internal/adapter/logger"
+	"adblock_bot/internal/core/interfaces"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -11,7 +12,7 @@ type handler struct {
 	bot *tgbotapi.BotAPI
 }
 
-func New(bot *tgbotapi.BotAPI) *handler {
+func New(bot *tgbotapi.BotAPI) interfaces.MessageHandler {
 	return &handler{
 		bot: bot,
 	}
