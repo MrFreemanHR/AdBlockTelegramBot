@@ -22,6 +22,7 @@ func StartApp() error {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	rootCmd.AddCommand(botCmd)
 }
 
 func initConfig() {
