@@ -3,28 +3,29 @@ package ping
 import (
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/core/interfaces"
+	"adblock_bot/internal/transport"
 	"strings"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"adblock_bot/internal/core/entity"
 )
 
 type handler struct {
-	bot *tgbotapi.BotAPI
+	api *transport.TelegramAPI
 }
 
-func New(bot *tgbotapi.BotAPI) interfaces.MessageHandler {
+func New(api *transport.TelegramAPI) interfaces.MessageHandler {
 	return &handler{
-		bot: bot,
+		api: api,
 	}
 }
 
-func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
-	messageText := event.Message.Text
-	if strings.Contains(messageText, h.bot.Self.UserName) &&
+func (h *handler) ProcessMessage(event *entity.TelegramMessage) bool {
+	messageText := event.Text
+	if strings.Contains(messageText, h.api.Self().UserName) &&
 		strings.Contains(strings.ToLower(messageText), "ping") {
-		reply := tgbotapi.NewMessage(event.Message.Chat.ID, "Pong")
-		reply.ReplyToMessageID = event.Message.MessageID
-		_, err := h.bot.Send(reply)
+		reply := entity.NewMessage(event.Chat.ID, "Pong")
+		reply.ReplyToMessage = event
+		err := h.api.SendMessage(reply)
 		if err != nil {
 			logger.Logger().Warn("Can't send message: %s", err)
 		}

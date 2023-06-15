@@ -20,4 +20,17 @@ type TelegramMessage struct {
 	Photo interface{} `json:"photo,omitempty"`
 	// VideoNote message
 	VideoNote interface{} `json:"video_note,omitempty"`
+	// ReplyToMessage for replies, the original message.
+	// Note that the Message object in this field will not contain further ReplyToMessage fields
+	// even if it itself is a reply;
+	//
+	// optional
+	ReplyToMessage *TelegramMessage `json:"reply_to_message,omitempty"`
+}
+
+func NewMessage(chatID int64, text string) TelegramMessage {
+	return TelegramMessage{
+		Chat: &TelegramChat{ID: chatID},
+		Text: text,
+	}
 }

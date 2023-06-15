@@ -24,7 +24,7 @@ func (b *tdlibbot) OnMessage(event *client.UpdateNewMessage) {
 	if err == nil {
 		logger.Logger().UselessInfo("Message: %s", msg.Text)
 		for _, handler := range b.messageHandlers {
-			processed := handler.ProcessMessage(nil)
+			processed := handler.ProcessMessage(&msg)
 			if processed {
 				break
 			}

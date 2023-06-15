@@ -15,10 +15,10 @@ func (b *bot) ProcessEvents(event *tgbotapi.Update) {
 
 func (b *bot) OnMessage(event *tgbotapi.Update) {
 	msg, err := b.processMessageEntity(event)
-	if err != nil {
+	if err == nil {
 		logger.Logger().UselessInfo("Message: %s", msg.Text)
 		for _, handler := range b.messageHandlers {
-			processed := handler.ProcessMessage(nil)
+			processed := handler.ProcessMessage(&msg)
 			if processed {
 				break
 			}
@@ -47,7 +47,9 @@ func (b *bot) processMessageEntity(message *tgbotapi.Update) (entity.TelegramMes
 		ID:    message.Message.Chat.ID,
 		Type:  message.Message.Chat.Type,
 		Title: message.Message.Chat.Title,
-		Permissions: &entity.TelegramChatPermissions{
+	}
+	if message.Message.Chat.Permissions != nil {
+		messageEntity.Chat.Permissions = &entity.TelegramChatPermissions{
 			CanSendMessages:       message.Message.Chat.Permissions.CanSendMessages,
 			CanSendMediaMessages:  message.Message.Chat.Permissions.CanSendMediaMessages,
 			CanSendPolls:          message.Message.Chat.Permissions.CanSendPolls,
@@ -56,7 +58,7 @@ func (b *bot) processMessageEntity(message *tgbotapi.Update) (entity.TelegramMes
 			CanChangeInfo:         message.Message.Chat.Permissions.CanChangeInfo,
 			CanInviteUsers:        message.Message.Chat.Permissions.CanInviteUsers,
 			CanPinMessages:        message.Message.Chat.Permissions.CanPinMessages,
-		},
+		}
 	}
 	return messageEntity, nil
 }

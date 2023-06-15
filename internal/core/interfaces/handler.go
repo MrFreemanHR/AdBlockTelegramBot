@@ -1,7 +1,9 @@
 package interfaces
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	"adblock_bot/internal/core/entity"
+)
 
 type MessageHandler interface {
-	ProcessMessage(event *tgbotapi.Update) bool
+	ProcessMessage(event *entity.TelegramMessage) bool
 }

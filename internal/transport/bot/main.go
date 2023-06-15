@@ -3,7 +3,9 @@ package bot
 import (
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/config"
+	"adblock_bot/internal/core/entity"
 	"adblock_bot/internal/core/interfaces"
+	"adblock_bot/internal/transport"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -38,8 +40,23 @@ func (b *bot) SetMessageHandlers(messageHandlers []interfaces.MessageHandler) {
 	b.messageHandlers = messageHandlers
 }
 
-func (b *bot) GetTelegramAPI() *tgbotapi.BotAPI {
-	return b.b
+func (b *bot) GetTelegramAPI() *transport.TelegramAPI {
+	self, err := b.b.GetMe()
+	if err != nil {
+		logger.Logger().Fatal("[TG API] Can't get me: %s", err.Error())
+		return nil
+	}
+	return transport.NewUnifiedTransportWithBotAPI(
+		b.b,
+		entity.TelegramUser{
+			ID:           self.ID,
+			IsBot:        self.IsBot,
+			FirstName:    self.FirstName,
+			LastName:     self.LastName,
+			UserName:     self.UserName,
+			LanguageCode: self.LanguageCode,
+		},
+	)
 }
 
 func (b *bot) Run() {

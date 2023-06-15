@@ -3,7 +3,9 @@ package tdlibbot
 import (
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/config"
+	"adblock_bot/internal/core/entity"
 	"adblock_bot/internal/core/interfaces"
+	"adblock_bot/internal/transport"
 	"os"
 	"strconv"
 
@@ -96,6 +98,29 @@ func createDirs() error {
 	}
 
 	return nil
+}
+
+func (t *tdlibbot) SetMessageHandlers(messageHandlers []interfaces.MessageHandler) {
+	t.messageHandlers = messageHandlers
+}
+
+func (t *tdlibbot) GetTelegramAPI() *transport.TelegramAPI {
+	self, err := t.client.GetMe()
+	if err != nil {
+		logger.Logger().Fatal("[TD LIB] Can't get me: %s", err.Error())
+		return nil
+	}
+	return transport.NewUnifiedTransportWithTDlib(
+		t.client,
+		entity.TelegramUser{
+			ID:           self.Id,
+			IsBot:        self.Type.UserTypeType() == client.TypeUserTypeBot,
+			FirstName:    self.FirstName,
+			LastName:     self.LastName,
+			UserName:     self.Username,
+			LanguageCode: self.LanguageCode,
+		},
+	)
 }
 
 func (t *tdlibbot) Run() {

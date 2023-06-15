@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"adblock_bot/internal/core/interfaces"
+	"adblock_bot/internal/transport/bot/message_handler/ping"
 	tdlibbot "adblock_bot/internal/transport/tdlib_bot"
 
 	"github.com/spf13/cobra"
@@ -21,6 +23,13 @@ func StartUserBot() {
 	if userbot == nil {
 		return
 	}
+
+	pingMessageHandler := ping.New(userbot.GetTelegramAPI())
+
+	messageHandlers := []interfaces.MessageHandler{
+		pingMessageHandler,
+	}
+	userbot.SetMessageHandlers(messageHandlers)
 
 	userbot.Run()
 }
