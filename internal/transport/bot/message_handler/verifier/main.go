@@ -28,6 +28,9 @@ func New(bot *tgbotapi.BotAPI, db *sqlite.SQLite) interfaces.MessageHandler {
 }
 
 func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
+	if event.Message.Chat.IsPrivate() {
+		return false
+	}
 	user := event.Message.From
 	if user == nil {
 		return false
