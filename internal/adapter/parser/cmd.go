@@ -19,5 +19,6 @@ func NewCmd(name string) Cmd {
 func GetCommandNames() []string {
 	return []string{
 		"locales",
+		"verifier",
 	}
 }

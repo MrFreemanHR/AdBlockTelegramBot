@@ -9,3 +9,7 @@ func (c Char) IsWhitespace() bool {
 func (c Char) IsQuote() bool {
 	return c == Char('"')
 }
+
+func (c Char) IsBackSlash() bool {
+	return c == Char('\\')
+}
