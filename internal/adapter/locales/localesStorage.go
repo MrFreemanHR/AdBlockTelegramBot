@@ -4,8 +4,10 @@ import (
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/config"
 	"errors"
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 )
 
 type LocalesStorage struct {
@@ -84,6 +86,43 @@ func (l *LocalesStorage) GetDefaultKey(group, key string) string {
 	}
 
 	return value
+}
+
+func (l *LocalesStorage) GetRandomKey(localeName, group string) string {
+	defaultLocale := l.locales["default"]
+	var locale Locale
+	var ok bool
+
+	if locale, ok = l.locales[localeName]; !ok {
+		value, _ := defaultLocale.GetByKey("general", "locale_not_found")
+		return value
+	}
+
+	if locale.Keys[group] == nil || len(locale.Keys[group]) == 0 {
+		value, _ := defaultLocale.GetByKey("general", "group_not_found")
+		return value
+	}
+
+	keys := make([]string, 0, len(locale.Keys[group]))
+	for k := range locale.Keys[group] {
+		keys = append(keys, k)
+	}
+
+	rs := rand.NewSource(time.Now().Unix())
+	r := rand.New(rs)
+	randomInt := r.Intn(len(keys))
+	randomKey := keys[randomInt]
+	val, _ := locale.GetByKey(group, randomKey)
+	return val
+}
+
+func (l *LocalesStorage) GetRandomKeyFromCurrentLocale(group string) string {
+	defaultLocaleFromConfig := config.CurrentConfig.DefaultLocale
+	if defaultLocaleFromConfig == "" {
+		defaultLocaleFromConfig = "default"
+	}
+
+	return l.GetRandomKey(defaultLocaleFromConfig, group)
 }
 
 func (l *LocalesStorage) GetKeyFromLocale(localeName, group, key string) string {

@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"adblock_bot/infrastructure/sqlite"
 	"adblock_bot/internal/core/interfaces"
 	"adblock_bot/internal/transport/bot"
 	cmdHandler "adblock_bot/internal/transport/bot/message_handler/cmd"
 	"adblock_bot/internal/transport/bot/message_handler/ping"
+	"adblock_bot/internal/transport/bot/message_handler/verifier"
 
 	"github.com/spf13/cobra"
 )
@@ -20,13 +22,16 @@ var botCmd = &cobra.Command{
 
 func StartBot() {
 	tgbot := bot.New()
+	db := sqlite.New()
 
 	pingMessageHandler := ping.New(tgbot.GetTelegramAPI())
-	localesCmdMessageHandler := cmdHandler.New(tgbot.GetTelegramAPI())
+	cmdCmdMessageHandler := cmdHandler.New(tgbot.GetTelegramAPI(), db)
+	verifierMessageHandler := verifier.New(tgbot.GetTelegramAPI(), db)
 
 	messageHandlers := []interfaces.MessageHandler{
+		verifierMessageHandler,
 		pingMessageHandler,
-		localesCmdMessageHandler,
+		cmdCmdMessageHandler,
 	}
 	tgbot.SetMessageHandlers(messageHandlers)
 

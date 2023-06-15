@@ -42,6 +42,24 @@ func RunParser() {
 func printCmdInfo(c *parser.Cmd) {
 	logger.Logger().Info("=== Command summary ===")
 	logger.Logger().Info("Command name: %s", c.Name)
+	var subcmd = c.ChildSubcmd
+	var lastSubcmd *parser.Subcmd
+	for {
+		logger.Logger().Info("Subcmd: %s", subcmd.Name)
+		if subcmd.Child == nil {
+			lastSubcmd = subcmd
+			break
+		}
+		subcmd = subcmd.Child
+	}
+	logger.Logger().Info("Required args:")
+	for i, requiredArg := range lastSubcmd.RequiredArgs {
+		logger.Logger().Info("[%d] Value: %s", i, requiredArg.GetValue())
+	}
+	logger.Logger().Info("Optional args:")
+	for i, optionalArg := range lastSubcmd.OptionalArgs {
+		logger.Logger().Info("[%d] Value: %s", i, optionalArg.GetValue())
+	}
 	logger.Logger().Info("=======================")
 }
 

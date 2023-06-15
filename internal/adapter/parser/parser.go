@@ -32,7 +32,8 @@ func (p *Parser) Parse(command string) (*Cmd, error) {
 
 func (p *Parser) commandsParsers() map[string]func(*Cmd, string) error {
 	return map[string]func(*Cmd, string) error{
-		"locales": p.parseLocalesCommand,
+		"locales":  p.parseLocalesCommand,
+		"verifier": p.parseVerifierCommand,
 	}
 }
 
@@ -61,7 +62,7 @@ func (p *Parser) nextToken(str string) (Token, string, error) {
 	if len(str) > 0 && Char(str[0]).IsQuote() {
 		inQuotes = true
 	}
-
+	var previousChar = Char(' ')
 	for i, char = range str {
 		currentChar := Char(char)
 		if currentChar.IsWhitespace() && !inQuotes {
@@ -71,9 +72,18 @@ func (p *Parser) nextToken(str string) (Token, string, error) {
 			if i == 0 {
 				continue
 			}
+			if previousChar.IsBackSlash() {
+				token.InsertChar(currentChar)
+				previousChar = currentChar
+				continue
+			}
+			i++
 			break
 		}
-		token.InsertChar(currentChar)
+		if !currentChar.IsBackSlash() {
+			token.InsertChar(currentChar)
+		}
+		previousChar = currentChar
 	}
 	if empty := token.IsEmpty(); empty != nil {
 		return token, "", empty
