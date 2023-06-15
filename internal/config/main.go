@@ -10,8 +10,8 @@ var CurrentConfig Config
 type Config struct {
 	// Logger
 	VerbosityLevel uint `json:"verbosity_level"`
-	// SQLite DSN
-	SQLiteDSN string `json:"sqlite_dsn"`
+	// MySQL DSN
+	MySQlDSN string `json:"mysql_dsn"`
 	// Telegram
 	Token string `json:"token"`
 	// tdlib telegram

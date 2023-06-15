@@ -1,6 +1,6 @@
 {
     "verbosity_level": 2,
-    "sqlite_dsn": "bot.db",
+    "mysql_dsn": "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True",
     "token": "my tg bot",
     "api_id": "telegram api id",
     "api_hash": "telegram api hash",

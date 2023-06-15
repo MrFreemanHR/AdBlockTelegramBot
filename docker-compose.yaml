@@ -6,4 +6,13 @@ services:
       context: .
       dockerfile: Dockerfile
       target: bot
-    
+  db:
+    image: mysql:8
+    restart: always
+    ports:
+      - 33060:3306
+    volumes:
+      - ./db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: gj5qHVQh0Mcekisy
+      MYSQL_DATABASE: bot

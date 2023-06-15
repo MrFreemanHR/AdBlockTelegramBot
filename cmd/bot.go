@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"adblock_bot/infrastructure/sqlite"
+	"adblock_bot/infrastructure/mysql"
 	"adblock_bot/internal/core/interfaces"
 	"adblock_bot/internal/transport/bot"
 	cmdHandler "adblock_bot/internal/transport/bot/message_handler/cmd"
@@ -22,7 +22,7 @@ var botCmd = &cobra.Command{
 
 func StartBot() {
 	tgbot := bot.New()
-	db := sqlite.New()
+	db := mysql.New()
 
 	pingMessageHandler := ping.New(tgbot.GetTelegramAPI())
 	cmdCmdMessageHandler := cmdHandler.New(tgbot.GetTelegramAPI(), db)

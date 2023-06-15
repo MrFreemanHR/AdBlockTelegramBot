@@ -1,2 +1,5 @@
 /locales/
 /config.json
+/db/*
+/tdlib-db/*
+/tdlib-files/*

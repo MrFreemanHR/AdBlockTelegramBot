@@ -1,7 +1,7 @@
 package verifier
 
 import (
-	"adblock_bot/infrastructure/sqlite"
+	"adblock_bot/infrastructure/mysql"
 	"adblock_bot/internal/adapter/locales"
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/core/interfaces"
@@ -17,7 +17,7 @@ type handler struct {
 	verRuleRepo interfaces.VerifierRuleRepository
 }
 
-func New(bot *tgbotapi.BotAPI, db *sqlite.SQLite) interfaces.MessageHandler {
+func New(bot *tgbotapi.BotAPI, db *mysql.MySql) interfaces.MessageHandler {
 	repoManager := repository.NewRepositoryManager(*db)
 	verRuleRepo := repoManager.GetVerifierRuleRepository()
 
