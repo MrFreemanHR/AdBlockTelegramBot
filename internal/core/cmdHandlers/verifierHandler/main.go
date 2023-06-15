@@ -184,7 +184,7 @@ func (h *cmdhandler) printableRules(rules []models.VerifierRule, jsonFlag bool, 
 				" ",
 				"	",
 			)
-			result += fmt.Sprintf("```\n%s```", string(data)) + "\n"
+			result += fmt.Sprintf("<pre>%s</pre>", string(data)) + "\n"
 		} else {
 			result += (fmt.Sprintf(
 				locales.GetCurrentLocalesStorage().GetDefaultKey("verifier", "rule_raw_created_at"),

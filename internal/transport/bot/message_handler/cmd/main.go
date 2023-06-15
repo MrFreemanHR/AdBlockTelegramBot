@@ -3,11 +3,13 @@ package cmd
 import (
 	"adblock_bot/infrastructure/sqlite"
 	"adblock_bot/internal/adapter/locales"
+	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/adapter/parser"
 	localeshandler "adblock_bot/internal/core/cmdHandlers/localesHandler"
 	verifierhandler "adblock_bot/internal/core/cmdHandlers/verifierHandler"
 	"adblock_bot/internal/core/interfaces"
 	"adblock_bot/internal/repository"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -35,6 +37,13 @@ func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
 	messageText := event.Message.Text
 
 	if len(messageText) > 0 && messageText[0] == '/' {
+		if event.Message.Chat.IsSuperGroup() && !strings.Contains(messageText, h.bot.Self.UserName) {
+			return false
+		}
+
+		if strings.Contains(messageText, "@") {
+			messageText = messageText[:strings.Index(messageText, "@")]
+		}
 		cmd, err := h.parser.Parse(messageText)
 		reply := tgbotapi.NewMessage(event.Message.Chat.ID, "")
 		var replyText string
@@ -46,12 +55,15 @@ func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
 			}
 			if cmd.Name == "verifier" {
 				replyText = h.vfh.ProcessCommand(cmd)
-				reply.ParseMode = "markdown"
+				reply.ParseMode = "html"
 			}
 		}
 		reply.Text = replyText
 		reply.ReplyToMessageID = event.Message.MessageID
-		h.bot.Send(reply)
+		_, err = h.bot.Send(reply)
+		if err != nil {
+			logger.Logger().Error("Error while sending reply message: %s", err.Error())
+		}
 		return true
 	}
 
