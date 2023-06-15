@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"adblock_bot/internal/adapter/locales"
 	"adblock_bot/internal/adapter/logger"
 	"adblock_bot/internal/config"
 
@@ -22,6 +23,8 @@ func StartApp() error {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	rootCmd.AddCommand(botCmd)
+	rootCmd.AddCommand(cmdParserCmd)
 }
 
 func initConfig() {
@@ -29,4 +32,5 @@ func initConfig() {
 	config.CurrentConfig, err = config.ParseConfig("config.json")
 	cobra.CheckErr(err)
 	logger.New(logger.VerbosityLevel(config.CurrentConfig.VerbosityLevel))
+	locales.New()
 }
