@@ -4,6 +4,7 @@
     "token": "my tg bot",
     "api_id": "telegram api id",
     "api_hash": "telegram api hash",
+    "database_password": "",
     "locales_folder": "",
     "default_locale": "default"
 }

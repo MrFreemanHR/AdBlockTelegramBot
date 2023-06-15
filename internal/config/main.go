@@ -15,8 +15,9 @@ type Config struct {
 	// Telegram
 	Token string `json:"token"`
 	// tdlib telegram
-	APIid   string `json:"api_id"`
-	APIHash string `json:"api_hash"`
+	APIid            string `json:"api_id"`
+	APIHash          string `json:"api_hash"`
+	DatabasePassword string `json:"database_password"`
 	// Locales
 	LocalesFolder string `json:"locales_folder"`
 	DefaultLocale string `json:"default_locale"`
