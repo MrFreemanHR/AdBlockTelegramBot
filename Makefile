@@ -6,6 +6,7 @@ clean-td:
 
 build-td: clean-td
 	git clone https://github.com/tdlib/td.git
+	cd td && git checkout v1.7.0
 	cd td && mkdir build
 	cd td/build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . -j 6 && sudo make install
 

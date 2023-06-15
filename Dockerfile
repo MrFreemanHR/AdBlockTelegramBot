@@ -18,5 +18,6 @@ WORKDIR /myApp
 COPY . .
 RUN go get
 RUN go build --ldflags "-extldflags '-L/usr/local/lib -ltdjson_static -ltdjson_private -ltdclient -ltdcore -ltdactor -ltddb -ltdsqlite -ltdnet -ltdutils -ldl -lm -lssl -lcrypto -lstdc++ -lz -lbsd'" -o /root/bot main.go
+RUN cp /myApp/config.json /root/
 
 ENTRYPOINT ["/bin/bash", "-c", "while true; do sleep 10; done"]
