@@ -22,6 +22,9 @@ func (b *tdlibbot) ProcessEvents(event client.Type) {
 func (b *tdlibbot) OnMessage(event *client.UpdateNewMessage) {
 	msg, err := b.processMessageEntity(event.Message)
 	if err == nil {
+		if *msg.From == b.GetTelegramAPI().Self() {
+			return
+		}
 		logger.Logger().UselessInfo("Message: %s", msg.Text)
 		for _, handler := range b.messageHandlers {
 			processed := handler.ProcessMessage(&msg)
