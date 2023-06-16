@@ -85,6 +85,15 @@ func (api *TelegramAPI) RemoveMessage(chatID, messageID int64) error {
 		_, err := api.tgapi.Send(msg)
 		return err
 	}
+	if api.tdlib != nil {
+		request := client.DeleteMessagesRequest{
+			ChatId:     chatID,
+			MessageIds: []int64{messageID},
+			Revoke:     true,
+		}
+		_, err := api.tdlib.DeleteMessages(&request)
+		return err
+	}
 	return nil
 }
 

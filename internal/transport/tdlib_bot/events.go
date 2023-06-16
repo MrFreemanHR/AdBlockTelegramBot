@@ -40,6 +40,12 @@ func (b *tdlibbot) processMessageEntity(message *client.Message) (entity.Telegra
 	switch message.Content.MessageContentType() {
 	case client.TypeMessageText:
 		messageEntity = b.processTextMessage((message.Content).(*client.MessageText))
+	case client.TypeMessageVideoNote:
+		messageEntity.VideoNote = (message.Content).(*client.MessageVideoNote)
+	case client.TypeMessageVoiceNote:
+		messageEntity.Audio = (message.Content).(*client.MessageVoiceNote)
+	case client.TypeMessagePhoto:
+		messageEntity.Photo = (message.Content).(*client.MessagePhoto)
 	}
 	messageEntity.MessageID = message.Id
 	// Sender processing
