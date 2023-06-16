@@ -16,3 +16,11 @@ type TelegramChat struct {
 	// optional
 	Permissions *TelegramChatPermissions `json:"permissions,omitempty"`
 }
+
+func (c TelegramChat) IsSuperGroup() bool {
+	return c.Type == "supergroup" || c.Type == "chatTypeSupergroup"
+}
+
+func (c TelegramChat) IsPrivate() bool {
+	return c.Type == "private" || c.Type == "chatTypePrivate"
+}

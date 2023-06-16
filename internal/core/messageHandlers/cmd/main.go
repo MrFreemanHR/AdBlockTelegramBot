@@ -7,37 +7,37 @@ import (
 	"adblock_bot/internal/adapter/parser"
 	localeshandler "adblock_bot/internal/core/cmdHandlers/localesHandler"
 	verifierhandler "adblock_bot/internal/core/cmdHandlers/verifierHandler"
+	"adblock_bot/internal/core/entity"
 	"adblock_bot/internal/core/interfaces"
 	"adblock_bot/internal/repository"
+	"adblock_bot/internal/transport"
 	"strings"
-
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type handler struct {
-	bot    *tgbotapi.BotAPI
+	api    *transport.TelegramAPI
 	lch    interfaces.CmdHandler
 	vfh    interfaces.CmdHandler
 	parser *parser.Parser
 }
 
-func New(bot *tgbotapi.BotAPI, db *mysql.MySql) interfaces.MessageHandler {
+func New(api *transport.TelegramAPI, db *mysql.MySql) interfaces.MessageHandler {
 	repoManager := repository.NewRepositoryManager(*db)
 	verRuleRepo := repoManager.GetVerifierRuleRepository()
 
 	return &handler{
-		bot:    bot,
+		api:    api,
 		lch:    localeshandler.New(),
 		vfh:    verifierhandler.New(verRuleRepo),
 		parser: parser.New(),
 	}
 }
 
-func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
-	messageText := event.Message.Text
+func (h *handler) ProcessMessage(event *entity.TelegramMessage) bool {
+	messageText := event.Text
 
 	if len(messageText) > 0 && messageText[0] == '/' {
-		if event.Message.Chat.IsSuperGroup() && !strings.Contains(messageText, h.bot.Self.UserName) {
+		if event.Chat.IsSuperGroup() && !strings.Contains(messageText, h.api.Self().UserName) {
 			return false
 		}
 
@@ -45,7 +45,7 @@ func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
 			messageText = messageText[:strings.Index(messageText, "@")]
 		}
 		cmd, err := h.parser.Parse(messageText)
-		reply := tgbotapi.NewMessage(event.Message.Chat.ID, "")
+		reply := entity.NewMessage(event.Chat.ID, "")
 		var replyText string
 		if err != nil {
 			replyText = h.processErrorFromParser(err)
@@ -59,8 +59,8 @@ func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
 			}
 		}
 		reply.Text = replyText
-		reply.ReplyToMessageID = event.Message.MessageID
-		_, err = h.bot.Send(reply)
+		reply.ReplyToMessage = event
+		err = h.api.SendMessage(reply)
 		if err != nil {
 			logger.Logger().Error("Error while sending reply message: %s", err.Error())
 		}

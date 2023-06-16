@@ -22,6 +22,9 @@ func (b *tdlibbot) ProcessEvents(event client.Type) {
 func (b *tdlibbot) OnMessage(event *client.UpdateNewMessage) {
 	msg, err := b.processMessageEntity(event.Message)
 	if err == nil {
+		if *msg.From == b.GetTelegramAPI().Self() {
+			return
+		}
 		logger.Logger().UselessInfo("Message: %s", msg.Text)
 		for _, handler := range b.messageHandlers {
 			processed := handler.ProcessMessage(&msg)
@@ -37,6 +40,12 @@ func (b *tdlibbot) processMessageEntity(message *client.Message) (entity.Telegra
 	switch message.Content.MessageContentType() {
 	case client.TypeMessageText:
 		messageEntity = b.processTextMessage((message.Content).(*client.MessageText))
+	case client.TypeMessageVideoNote:
+		messageEntity.VideoNote = (message.Content).(*client.MessageVideoNote)
+	case client.TypeMessageVoiceNote:
+		messageEntity.Audio = (message.Content).(*client.MessageVoiceNote)
+	case client.TypeMessagePhoto:
+		messageEntity.Photo = (message.Content).(*client.MessagePhoto)
 	}
 	messageEntity.MessageID = message.Id
 	// Sender processing
