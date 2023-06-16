@@ -4,34 +4,34 @@ import (
 	"adblock_bot/infrastructure/mysql"
 	"adblock_bot/internal/adapter/locales"
 	"adblock_bot/internal/adapter/logger"
+	"adblock_bot/internal/core/entity"
 	"adblock_bot/internal/core/interfaces"
 	"adblock_bot/internal/repository"
 	"adblock_bot/internal/repository/models"
+	"adblock_bot/internal/transport"
 	"regexp"
-
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type handler struct {
-	bot         *tgbotapi.BotAPI
+	api         *transport.TelegramAPI
 	verRuleRepo interfaces.VerifierRuleRepository
 }
 
-func New(bot *tgbotapi.BotAPI, db *mysql.MySql) interfaces.MessageHandler {
+func New(api *transport.TelegramAPI, db *mysql.MySql) interfaces.MessageHandler {
 	repoManager := repository.NewRepositoryManager(*db)
 	verRuleRepo := repoManager.GetVerifierRuleRepository()
 
 	return &handler{
-		bot:         bot,
+		api:         api,
 		verRuleRepo: verRuleRepo,
 	}
 }
 
-func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
-	if event.Message.Chat.IsPrivate() {
+func (h *handler) ProcessMessage(event *entity.TelegramMessage) bool {
+	if event.Chat.IsPrivate() {
 		return false
 	}
-	user := event.Message.From
+	user := event.From
 	if user == nil {
 		return false
 	}
@@ -40,14 +40,13 @@ func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
 		logger.Logger().Warn("Can't get rules from db for user %s: %s", user.UserName, err.Error())
 		return false
 	}
-	reply := tgbotapi.NewMessage(event.Message.Chat.ID, "")
-	reply.ReplyToMessageID = event.Message.MessageID
-	del := tgbotapi.NewDeleteMessage(event.Message.Chat.ID, event.Message.MessageID)
+	reply := entity.NewMessage(event.Chat.ID, "")
+	reply.ReplyToMessage = event
 	for _, rule := range rules {
 		if h.processRule(event, rule) {
 			// Process keys from local
 			if rule.LocaleGroup == "" {
-				h.bot.Send(del)
+				h.api.RemoveMessage(event.Chat.ID, event.MessageID)
 				return true
 			}
 			if rule.LocaleKey != "" {
@@ -55,35 +54,35 @@ func (h *handler) ProcessMessage(event *tgbotapi.Update) bool {
 			} else {
 				reply.Text = locales.GetCurrentLocalesStorage().GetRandomKeyFromCurrentLocale(rule.LocaleGroup)
 			}
-			h.bot.Send(reply)
-			h.bot.Send(del)
+			h.api.SendMessage(reply)
+			h.api.RemoveMessage(event.Chat.ID, event.MessageID)
 			return true
 		}
 	}
 	return false
 }
 
-func (h *handler) processRule(event *tgbotapi.Update, rule models.VerifierRule) bool {
+func (h *handler) processRule(event *entity.TelegramMessage, rule models.VerifierRule) bool {
 	// Check for deny audio note
-	if event.Message.Audio != nil && !rule.AudioNote {
+	if event.Audio != nil && !rule.AudioNote {
 		return true
 	}
 	// Check for deny video note
-	if event.Message.VideoNote != nil && !rule.VideoNote {
+	if event.VideoNote != nil && !rule.VideoNote {
 		return true
 	}
 	// Check for deny photo
-	if event.Message.Photo != nil && !rule.Photo {
+	if event.Photo != nil && !rule.Photo {
 		return true
 	}
 	// Check text by regexp
-	if event.Message.Text != "" && rule.Text != "" {
+	if event.Text != "" && rule.Text != "" {
 		r, err := regexp.Compile(rule.Text)
 		if err != nil {
 			logger.Logger().Warn("Invalid regexp in rule with id %d: %s", rule.Id, err.Error())
 			return false
 		}
-		return r.MatchString(event.Message.Text)
+		return r.MatchString(event.Text)
 	}
 	return false
 }
